@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cifras da Missa</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--panel:#ffffff;--ink:#1b1f2a;--mute:#667085;--line:#dfe3ea;--chord:#6b3fa0;--accent:#6b3fa0;--onaccent:#fff;--sel:#efe8f8;--danger:#b42318;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12141b;--panel:#1a1d27;--ink:#eceef4;--mute:#9aa3b5;--line:#2c3140;--chord:#c9a9ff;--accent:#b690f5;--onaccent:#1a1233;--sel:#2a2342;--danger:#f97066}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12141b;--panel:#1a1d27;--ink:#eceef4;--mute:#9aa3b5;--line:#2c3140;--chord:#c9a9ff;--accent:#b690f5;--onaccent:#1a1233;--sel:#2a2342;--danger:#f97066}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:600}
+button.del{color:var(--danger)}
+.app{display:flex;height:100%;position:relative}
+aside{width:290px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside header{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+aside h1{margin:0 0 10px;font-size:20px;letter-spacing:.2px}
+aside header button{width:100%}
+#list{overflow:auto;padding:8px 8px 24px;flex:1}
+details{margin:2px 0}
+summary{cursor:pointer;padding:8px;border-radius:8px;font-weight:600;list-style:none;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary:hover{background:var(--bg)}
+summary span{color:var(--mute);font-weight:400}
+.song{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 8px 8px 20px;border-radius:8px;min-height:0}
+.song:hover{background:var(--bg)}
+.song.on{background:var(--sel);color:var(--accent);font-weight:600}
+main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+.top h2{margin:0;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#menu{display:none}
+.tools{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+.grp{display:flex;align-items:center;gap:6px}
+.grp b{min-width:64px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.grp label{color:var(--mute);font-size:13px}
+input[type=range]{width:110px;accent-color:var(--accent)}
+#sheet{flex:1;overflow:auto;padding:20px 22px 160px;scroll-behavior:auto}
+pre{margin:0 auto;max-width:960px;font:var(--fs,18px)/1.5 ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;white-space:pre;tab-size:4}
+.c{color:var(--chord);font-weight:700}
+.sec{color:var(--mute);font-weight:700}
+.empty{max-width:420px;margin:12vh auto;text-align:center;color:var(--mute)}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);width:min(720px,94vw);padding:0}
+dialog::backdrop{background:rgba(10,12,20,.55)}
+.dl{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dl h3{margin:0;font-size:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:180px}
+.dl input[type=text],.dl select,.dl textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.dl textarea{height:42vh;min-height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;white-space:pre;resize:vertical}
+.hint{color:var(--mute);font-size:13px;margin:0}
+.acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#msg{min-height:18px;font-size:13px;color:var(--accent)}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;width:auto}
+.tabs button.on{background:var(--sel);color:var(--accent);border-color:var(--accent);font-weight:600}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{border:1px solid var(--line);border-radius:8px;height:44vh;overflow:auto;padding:6px;margin-top:4px}
+.item{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:6px}
+.item span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item button{min-height:30px;padding:2px 9px}
+.catl{color:var(--mute);font-size:12px;font-weight:600;padding:8px 6px 2px}
+#lmsg{min-height:18px;font-size:13px;color:var(--accent)}
+#ldel{margin-right:auto}
+[hidden]{display:none!important}
+#jump{max-width:170px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 8px;min-height:38px}
+#lcats{height:58vh}
+.lc{margin-bottom:8px}
+.blk{max-width:960px;margin:0 auto 44px;padding-bottom:12px;border-bottom:1px solid var(--line);overflow-x:auto}
+.bh{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.bh small{color:var(--accent);font-weight:600;font-size:13px}
+.bh h3{margin:0;font-size:22px}
+.blk pre{margin:0}
+@media (max-width:820px){
+ aside{position:absolute;inset:0 auto 0 0;z-index:5;transform:translateX(-102%);transition:transform .2s;width:min(320px,88vw);box-shadow:0 0 30px rgba(0,0,0,.3);padding-top:env(safe-area-inset-top,0px)}
+ aside.open{transform:none}
+ #menu{display:inline-block}
+ #sheet{padding:16px 14px 160px}
+ input[type=range]{width:90px}
+}
+@media (prefers-reduced-motion:reduce){aside{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside id="side">
+ <header><h1>Cifras da Missa</h1><div class="tabs"><button id="tabS" class="on">Cifras</button><button id="tabL">Missas</button></div><button class="pri" id="new">+ Nova cifra</button></header>
+ <div id="list"></div>
+</aside>
+<main>
+ <div class="top">
+  <button id="menu" aria-label="Abrir lista">Lista</button>
+  <h2 id="title">Selecione uma cifra</h2>
+  <select id="jump" hidden aria-label="Ir para uma cifra da lista"></select>
+  <button id="edit" hidden>Editar</button>
+  <button id="del" class="del" hidden>Excluir</button>
+ </div>
+ <div class="tools">
+  <div class="grp" id="tomgrp"><label>Tom</label><button id="tdn" aria-label="Descer meio tom">−</button><b id="key">–</b><button id="tup" aria-label="Subir meio tom">+</button><button id="t0">Original</button></div>
+  <div class="grp"><label>Letra</label><button id="fdn" aria-label="Diminuir fonte">A−</button><b id="fs">18</b><button id="fup" aria-label="Aumentar fonte">A+</button></div>
+  <div class="grp"><label>Rolagem</label><button id="play">▶ Iniciar</button><input type="range" id="spd" min="1" max="12" value="4" aria-label="Velocidade da rolagem"></div>
+ </div>
+ <div id="sheet"></div>
+</main>
+</div>
+
+<dialog id="dlg">
+ <div class="dl">
+  <h3 id="dtitle">Nova cifra</h3>
+  <div class="row">
+   <input type="text" id="ftitle" placeholder="Título do canto">
+   <select id="fcat"></select>
+  </div>
+  <div class="row" style="align-items:center">
+   <button id="pdfbtn">Enviar PDF da cifra</button>
+   <input type="file" id="pdf" accept="application/pdf" hidden>
+   <p class="hint">Ou digite/cole abaixo: acordes em uma linha, a letra na linha seguinte.</p>
+  </div>
+  <textarea id="ftext" spellcheck="false" placeholder="Am        F&#10;Letra do canto aqui&#10;C         G&#10;Mais um verso"></textarea>
+  <div id="msg"></div>
+  <div class="acts"><button id="cancel">Cancelar</button><button class="pri" id="save">Salvar cifra</button></div>
+ </div>
+</dialog>
+
+<dialog id="ldlg">
+ <div class="dl">
+  <h3 id="ltitle">Nova lista</h3>
+  <input type="text" id="lname" placeholder="Nome da lista (ex.: Missa de domingo, 10h)">
+  <p class="hint">Em cada parte da missa, escolha as cifras que já estão no site. A página final segue esta ordem.</p>
+  <div class="col" id="lcats"></div>
+  <div id="lmsg"></div>
+  <div class="acts"><button id="ldel" class="del" hidden>Excluir lista</button><button id="lcancel">Cancelar</button><button class="pri" id="lsave">Salvar lista</button></div>
+ </div>
+</dialog>
+
+<script>
+const CATS=["Canto de Entrada","Ato Penitencial","Glória","Salmo Responsorial","Aclamação ao Evangelho","Oração dos Fiéis","Ofertório","Santo","Cordeiro de Deus","Comunhão","Ação de Graças","Canto Final","Outros"];
+const SH=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],FL=["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+const CH=/^[A-G][#b]?(?:(?:maj|Maj|min|Min|dim|Dim|aug|Aug|sus|Sus|add|Add|m|M|°|º)|\d{1,2}(?:\/\d{1,2})?(?:[#b+-]\d{1,2})*(?:maj|Maj|M|m)?)*(?:\([^)]*\))?[+-]?(?:\/[A-G][#b]?)?$/;
+const FILL=/^(?:\(?\d{1,3}\s*[xX]\.?\)?|\(?[xX]\d{1,3}\)?|\(?bis\)?|N\.?C\.?|%|-{2,}|\.{2,}|\|{1,2}:?|:?\|{1,2})$/i;
+const $=id=>document.getElementById(id);
+let songs=[],curId=null,fs=18,timer=null,delArm=false,editId=null;
+let lists=[],tab="s",curList=null,lEdit=null,lDraft=[],lDelArm=false;
+
+function load(){
+ try{songs=JSON.parse(localStorage.getItem("cifrasMissa")||"[]")}catch(e){songs=[]}
+ try{const f=parseInt(localStorage.getItem("cifrasFs"));if(f)fs=f}catch(e){}
+ try{lists=JSON.parse(localStorage.getItem("cifrasListas")||"[]")}catch(e){lists=[]}
+ lists.forEach(l=>{if(!l.sel){l.sel={};(l.ids||[]).forEach(id=>{const s=songs.find(x=>x.id===id);if(s)(l.sel[s.cat]=l.sel[s.cat]||[]).push(id)})}});
+ if(!songs.length)songs=[{id:"ex1",title:"Exemplo de cifra",cat:"Canto de Entrada",t:0,
+ text:"Am            F\nSenhor, eu venho a ti\nC             G\nCom o coração aberto\nAm            F\nA tua casa é meu lar\nG         Am\nAqui eu quero estar"}];
+ curId=songs[0].id;
+}
+function save(){try{localStorage.setItem("cifrasMissa",JSON.stringify(songs))}catch(e){}}
+function saveL(){try{localStorage.setItem("cifrasListas",JSON.stringify(lists))}catch(e){}}
+const cur=()=>songs.find(s=>s.id===curId);
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function isC(l){const t=l.trim();if(!t)return false;const ks=t.split(/\s+/);return ks.every(x=>CH.test(x)||FILL.test(x))&&ks.some(x=>CH.test(x))}
+function idx(n){let i=SH.indexOf(n);return i>=0?i:FL.indexOf(n)}
+function tr(ch,n,flat){return ch.replace(/[A-G][#b]?/g,m=>{const i=idx(m);return i<0?m:(flat?FL:SH)[((i+n)%12+12)%12]})}
+function trLine(line,n,flat){let shift=0;
+ return line.replace(/(\S+)(\s*)/g,(m,t,s)=>{const nt=CH.test(t)?tr(t,n,flat):t;shift+=nt.length-t.length;
+  if(!s.length)return nt;const ns=Math.max(1,s.length-shift);shift+=ns-s.length;return nt+" ".repeat(ns)})}
+
+function render(){
+ updNav();if(curList){renderList();return}const s=cur();stop();
+ $("edit").hidden=$("del").hidden=!s;
+ if(!s){$("title").textContent="Selecione uma cifra";$("key").textContent="–";
+  $("sheet").innerHTML='<div class="empty"><p>Nenhuma cifra ainda.</p><p>Toque em “Nova cifra” para digitar ou enviar um PDF.</p></div>';return}
+ $("title").textContent=s.title;
+ const lines=s.text.split("\n"),flat=lines.some(l=>isC(l)&&/(^|\s|\/)[A-G]b/.test(l));
+ let first="";
+ const html=lines.map(l=>{
+  if(isC(l)){const t=s.t?trLine(l,s.t,flat):l;if(!first)first=t.trim().split(/\s+/).find(x=>/^[A-G]/.test(x))||"";return'<span class="c">'+esc(t)+"</span>"}
+  if(/^\s*\[.*\]\s*$/.test(l))return'<span class="sec">'+esc(l)+"</span>";
+  return esc(l)}).join("\n");
+ $("sheet").innerHTML="<pre>"+html+"</pre>";
+ const root=(first.match(/^[A-G][#b]?m?/)||["–"])[0];
+ $("key").textContent=root+(s.t?" ("+(s.t>0?"+":"")+s.t+")":"");
+ $("sheet").scrollTop=0;applyFs();
+}
+function applyFs(){document.documentElement.style.setProperty("--fs",fs+"px");$("fs").textContent=fs}
+
+function buildList(){tab==="l"?buildLists():buildSongs()}
+function buildLists(){
+ const box=$("list");box.innerHTML="";
+ if(!lists.length){box.innerHTML='<p class="hint" style="padding:12px">Nenhuma lista ainda. Crie uma para cada missa e escolha as cifras que já estão no site.</p>';return}
+ lists.forEach(l=>{
+  const d=document.createElement("details");d.open=l.id===curList||lists.length===1;
+  d.innerHTML="<summary>"+esc(l.name)+"<span>"+listFlat(l).length+"</span></summary>";
+  const eb=document.createElement("button");eb.className="song";eb.style.color="var(--mute)";eb.textContent="Editar lista";eb.onclick=()=>openLDlg(l);const ob=document.createElement("button");ob.className="song";ob.style.fontWeight="600";ob.textContent="Abrir lista completa";ob.onclick=()=>openList(l.id);d.appendChild(ob);d.appendChild(eb);
+  listFlat(l).forEach((e,i)=>{const s=e.s;
+   const b=document.createElement("button");b.className="song"+(s.id===curId&&curList===l.id?" on":"");
+   b.innerHTML=(i+1)+". "+esc(s.title)+' <span style="color:var(--mute);font-weight:400">'+esc(e.c)+"</span>";
+   b.onclick=()=>openList(l.id,i);d.appendChild(b)});
+  box.appendChild(d)});
+}
+function buildSongs(){
+ const box=$("list");box.innerHTML="";
+ CATS.forEach(c=>{
+  const items=songs.filter(s=>s.cat===c);
+  const d=document.createElement("details");d.open=items.length>0;
+  d.innerHTML="<summary>"+esc(c)+"<span>"+items.length+"</span></summary>";
+  items.forEach(s=>{const b=document.createElement("button");b.className="song"+(s.id===curId?" on":"");b.textContent=s.title;
+   b.onclick=()=>{curId=s.id;curList=null;delArm=false;$("del").textContent="Excluir";buildList();render();$("side").classList.remove("open")};d.appendChild(b)});
+  box.appendChild(d)});
+}
+
+/* Tom */
+function shift(n){const s=cur();if(!s)return;s.t=((s.t||0)+n)%12;if(n===0)s.t=0;save();const y=$("sheet").scrollTop;render();$("sheet").scrollTop=y}
+$("tup").onclick=()=>shift(1);$("tdn").onclick=()=>shift(-1);
+$("t0").onclick=()=>{const s=cur();if(s){s.t=0;save();render()}};
+
+/* Fonte */
+$("fup").onclick=()=>{fs=Math.min(48,fs+2);applyFs();try{localStorage.setItem("cifrasFs",fs)}catch(e){}};
+$("fdn").onclick=()=>{fs=Math.max(10,fs-2);applyFs();try{localStorage.setItem("cifrasFs",fs)}catch(e){}};
+
+/* Rolagem automática */
+function stop(){if(timer){cancelAnimationFrame(timer);timer=null}$("play").textContent="▶ Iniciar"}
+function start(){
+ const el=$("sheet");let last=null,acc=0;$("play").textContent="⏸ Pausar";
+ const step=t=>{if(last===null)last=t;const dt=(t-last)/1000;last=t;
+  acc+=dt*(+$("spd").value*8);const px=Math.floor(acc);if(px){el.scrollTop+=px;acc-=px}
+  if(el.scrollTop+el.clientHeight>=el.scrollHeight-1){stop();return}
+  timer=requestAnimationFrame(step)};
+ timer=requestAnimationFrame(step);
+}
+$("play").onclick=()=>timer?stop():start();
+
+/* Menu e excluir */
+$("menu").onclick=()=>$("side").classList.toggle("open");
+$("del").onclick=()=>{
+ if(!delArm){delArm=true;$("del").textContent="Confirmar exclusão";return}
+ songs=songs.filter(s=>s.id!==curId);lists.forEach(l=>CATS.forEach(c=>{if(l.sel[c])l.sel[c]=l.sel[c].filter(i=>i!==curId)}));saveL();curList=null;curId=songs[0]?songs[0].id:null;delArm=false;$("del").textContent="Excluir";save();buildList();render()};
+
+/* Diálogo */
+$("fcat").innerHTML=CATS.map(c=>"<option>"+c+"</option>").join("");
+function openDlg(s){
+ editId=s?s.id:null;$("dtitle").textContent=s?"Editar cifra":"Nova cifra";
+ $("ftitle").value=s?s.title:"";$("fcat").value=s?s.cat:CATS[0];$("ftext").value=s?s.text:"";$("msg").textContent="";$("dlg").showModal();
+}
+$("new").onclick=()=>tab==="s"?openDlg(null):openLDlg(null);
+$("edit").onclick=()=>curList?openLDlg(lists.find(x=>x.id===curList)):openDlg(cur());
+$("cancel").onclick=()=>$("dlg").close();
+$("save").onclick=()=>{
+ const title=$("ftitle").value.trim(),text=$("ftext").value.replace(/\r/g,"").replace(/\t/g,"    ").replace(/\s+$/,"");
+ if(!title||!text){$("msg").textContent="Preencha o título e a cifra antes de salvar.";return}
+ if(editId){const s=songs.find(x=>x.id===editId);s.title=title;s.cat=$("fcat").value;s.text=text;curId=s.id}
+ else{const s={id:"s"+Date.now(),title,cat:$("fcat").value,text,t:0};songs.push(s);curId=s.id}
+ save();$("dlg").close();buildList();render();
+};
+
+/* PDF */
+$("pdfbtn").onclick=()=>$("pdf").click();
+$("pdf").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ if(!window.pdfjsLib){$("msg").textContent="Não foi possível carregar o leitor de PDF. Digite ou cole a cifra no campo abaixo.";return}
+ $("msg").textContent="Lendo o PDF…";
+ try{
+  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+  const out=[];
+  for(let p=1;p<=pdf.numPages;p++){
+   const tc=await(await pdf.getPage(p)).getTextContent();
+   const items=tc.items.filter(i=>i.str&&i.str.length);
+   const ws=items.filter(i=>i.str.trim().length>1&&i.width).map(i=>i.width/i.str.length).sort((a,b)=>a-b);
+   const cw=ws[Math.floor(ws.length/2)]||5;
+   const rows=[];
+   items.forEach(i=>{const y=i.transform[5],x=i.transform[4];let r=rows.find(r=>Math.abs(r.y-y)<2.5);if(!r){r={y,it:[]};rows.push(r)}r.it.push({x,s:i.str})});
+   rows.sort((a,b)=>b.y-a.y);
+   const gaps=[];for(let i=1;i<rows.length;i++)gaps.push(rows[i-1].y-rows[i].y);
+   gaps.sort((a,b)=>a-b);const mg=gaps[Math.floor(gaps.length/2)]||12;
+   let minX=Math.min(...items.map(i=>i.transform[4]));
+   rows.forEach((r,i)=>{
+    if(i>0&&rows[i-1].y-r.y>mg*1.7)out.push("");
+    r.it.sort((a,b)=>a.x-b.x);let line="";
+    r.it.forEach(t=>{const col=Math.round((t.x-minX)/cw);while(line.length<col)line+=" ";if(line.length&&!line.endsWith(" ")&&line.length>=col)line+=" ";line+=t.s});
+    out.push(line.replace(/\s+$/,""))});
+   out.push("");
+  }
+  $("ftext").value=out.join("\n").replace(/\n{3,}/g,"\n\n").trim();
+  if(!$("ftitle").value)$("ftitle").value=f.name.replace(/\.pdf$/i,"").replace(/[_-]+/g," ");
+  $("msg").textContent="PDF lido. Confira o texto, escolha a categoria e salve.";
+ }catch(err){$("msg").textContent="Não consegui ler esse PDF (pode ser uma imagem escaneada). Tente colar o texto."}
+ e.target.value="";
+};
+
+/* Listas (missas) */
+function setTab(t){tab=t;$("tabS").classList.toggle("on",t==="s");$("tabL").classList.toggle("on",t==="l");$("new").textContent=t==="s"?"+ Nova cifra":"+ Nova lista";buildList()}
+$("tabS").onclick=()=>setTab("s");$("tabL").onclick=()=>setTab("l");
+const listFlat=l=>CATS.flatMap(c=>(l.sel[c]||[]).map(id=>({c,s:songs.find(x=>x.id===id)})).filter(e=>e.s));
+function updNav(){const L=!!curList;$("tomgrp").hidden=L;$("jump").hidden=!L;$("edit").textContent=L?"Editar lista":"Editar"}
+function openList(id,i){const l=lists.find(x=>x.id===id);if(!l)return;curList=id;delArm=false;$("del").textContent="Excluir";buildList();render();$("side").classList.remove("open");if(i)jumpTo(i)}
+function jumpTo(i){const sh=$("sheet"),el=sh.querySelector('[data-i="'+i+'"]');if(el)sh.scrollTop=el.getBoundingClientRect().top-sh.getBoundingClientRect().top+sh.scrollTop-8}
+function fmt(s){
+ const lines=s.text.split("\n"),flat=lines.some(l=>isC(l)&&/(^|\s|\/)[A-G]b/.test(l));let first="";
+ const html=lines.map(l=>{
+  if(isC(l)){const t=s.t?trLine(l,s.t,flat):l;if(!first)first=t.trim().split(/\s+/).find(x=>/^[A-G]/.test(x))||"";return'<span class="c">'+esc(t)+"</span>"}
+  if(/^\s*\[.*\]\s*$/.test(l))return'<span class="sec">'+esc(l)+"</span>";
+  return esc(l)}).join("\n");
+ return{html,key:(first.match(/^[A-G][#b]?m?/)||["–"])[0]};
+}
+function renderList(keep){
+ updNav();if(!keep)stop();
+ const l=lists.find(x=>x.id===curList);if(!l){curList=null;render();return}
+ const es=listFlat(l),y=$("sheet").scrollTop;
+ $("title").textContent=l.name;$("edit").hidden=false;$("del").hidden=true;
+ $("jump").innerHTML='<option value="">Ir para…</option>'+es.map((e,i)=>'<option value="'+i+'">'+(i+1)+". "+esc(e.c)+": "+esc(e.s.title)+"</option>").join("");
+ $("sheet").innerHTML=es.length?es.map((e,i)=>{const f=fmt(e.s),t=e.s.t||0;
+  return'<section class="blk" data-i="'+i+'"><div class="bh"><div><small>'+esc(e.c)+"</small><h3>"+esc(e.s.title)+'</h3></div><div class="grp"><label>Tom</label><button data-id="'+e.s.id+'" data-d="-1" aria-label="Descer meio tom">−</button><b>'+f.key+(t?" ("+(t>0?"+":"")+t+")":"")+'</b><button data-id="'+e.s.id+'" data-d="1" aria-label="Subir meio tom">+</button></div></div><pre>'+f.html+"</pre></section>"}).join("")
+  :'<div class="empty"><p>Esta lista ainda não tem cifras.</p><p>Toque em “Editar lista” para adicionar.</p></div>';
+ $("sheet").scrollTop=keep?y:0;applyFs();
+}
+$("jump").onchange=e=>{if(e.target.value!=="")jumpTo(+e.target.value);e.target.value=""};
+$("sheet").onclick=e=>{const b=e.target.closest("button[data-id]");if(!b)return;const s=songs.find(x=>x.id===b.dataset.id);s.t=((s.t||0)+ +b.dataset.d)%12;save();renderList(true)};
+function openLDlg(l){
+ lEdit=l?l.id:null;lDraft={};CATS.forEach(c=>{lDraft[c]=l&&l.sel[c]?l.sel[c].filter(id=>songs.some(s=>s.id===id)):[]});lDelArm=false;
+ $("ldel").textContent="Excluir lista";$("ldel").hidden=!l;$("ltitle").textContent=l?"Editar lista":"Nova lista";
+ $("lname").value=l?l.name:"";$("lmsg").textContent="";drawL();$("ldlg").showModal();
+}
+function drawL(){
+ const box=$("lcats");box.innerHTML="";
+ const opt=s=>'<option value="'+s.id+'">'+esc(s.title)+"</option>";
+ CATS.forEach(c=>{
+  const a=lDraft[c],sec=document.createElement("div");sec.className="lc";
+  const h=document.createElement("div");h.className="catl";h.textContent=c;sec.appendChild(h);
+  a.forEach((id,i)=>{const s=songs.find(x=>x.id===id);const r=document.createElement("div");r.className="item";r.innerHTML="<span>"+esc(s.title)+"</span>";
+   [["↑",-1],["↓",1]].forEach(([t,d])=>{const b=document.createElement("button");b.textContent=t;b.setAttribute("aria-label",d<0?"Mover para cima":"Mover para baixo");
+    b.disabled=(d<0&&i===0)||(d>0&&i===a.length-1);b.onclick=()=>{const j=i+d;[a[i],a[j]]=[a[j],a[i]];drawL()};r.appendChild(b)});
+   const x=document.createElement("button");x.textContent="✕";x.setAttribute("aria-label","Remover da lista");x.onclick=()=>{a.splice(i,1);drawL()};r.appendChild(x);sec.appendChild(r)});
+  const mine=songs.filter(s=>s.cat===c&&!a.includes(s.id)),others=songs.filter(s=>s.cat!==c&&!a.includes(s.id));
+  const sel=document.createElement("select");sel.setAttribute("aria-label","Adicionar cifra em "+c);
+  sel.innerHTML='<option value="">+ Adicionar cifra…</option>'+(mine.length?'<optgroup label="'+esc(c)+'">'+mine.map(opt).join("")+"</optgroup>":"")+(others.length?'<optgroup label="Outras categorias">'+others.map(opt).join("")+"</optgroup>":"");
+  sel.onchange=()=>{if(sel.value){a.push(sel.value);drawL()}};
+  sec.appendChild(sel);box.appendChild(sec)});
+}
+$("lcancel").onclick=()=>$("ldlg").close();
+$("lsave").onclick=()=>{
+ const name=$("lname").value.trim();
+ if(!name){$("lmsg").textContent="Dê um nome à lista antes de salvar.";return}
+ const sel={};CATS.forEach(c=>{if(lDraft[c].length)sel[c]=lDraft[c].slice()});
+ if(lEdit){const l=lists.find(x=>x.id===lEdit);l.name=name;l.sel=sel}
+ else{const l={id:"l"+Date.now(),name,sel};lists.push(l);lEdit=l.id}
+ saveL();$("ldlg").close();setTab("l");openList(lEdit);
+};
+$("ldel").onclick=()=>{
+ if(!lDelArm){lDelArm=true;$("ldel").textContent="Confirmar exclusão";return}
+ lists=lists.filter(x=>x.id!==lEdit);if(curList===lEdit)curList=null;saveL();$("ldlg").close();setTab("l");render();
+};
+
+load();buildList();render();
+</script>
+</body>
+</html>
